@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TravelPulse - Global Travel Insights</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"/>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        #header {
+            background-color: #3498db;
+            color: white;
+            padding: 1rem;
+            text-align: center;
+        }
+        #map {
+            flex-grow: 1;
+            width: 100%;
+        }
+        #nlp-interface {
+            position: absolute;
+            top: 80px;
+            left: 10px;
+            z-index: 1000;
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        #nlp-input {
+            width: 300px;
+            padding: 5px;
+            margin-right: 5px;
+        }
+        #analytics-panel {
+            position: absolute;
+            top: 80px;
+            right: 10px;
+            width: 300px;
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            max-height: 80%;
+            overflow-y: auto;
+        }
+        .analytics-item {
+            margin-bottom: 15px;
+        }
+        .analytics-item h3 {
+            margin: 0 0 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div id="header">
+        <h1>TravelPulse - Global Travel Insights</h1>
+    </div>
+    <div id="map"></div>
+    <div id="nlp-interface">
+        <input type="text" id="nlp-input" placeholder="Ask about travel trends...">
+        <button onclick="processQuery()">Ask</button>
+    </div>
+    <div id="analytics-panel">
+        <div class="analytics-item">
+            <h3>Total Travelers</h3>
+            <p id="total-travelers">Loading...</p>
+        </div>
+        <div class="analytics-item">
+            <h3>Most Popular Destination</h3>
+            <p id="popular-destination">Loading...</p>
+        </div>
+        <div class="analytics-item">
+            <h3>Busiest Travel Period</h3>
+            <p id="busiest-period">Loading...</p>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script>
+        // Initialize the map
+        var map = L.map('map').setView([0, 0], 2);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Mock data for demonstration
+        const travelData = {
+            totalTravelers: 1000000,
+            popularDestination: "Paris, France",
+            busiestPeriod: "July-August 2024",
+            flows: [
+                { from: [40.7128, -74.0060], to: [48.8566, 2.3522], count: 50000 }, // NYC to Paris
+                { from: [35.6762, 139.6503], to: [22.3193, 114.1694], count: 30000 }, // Tokyo to Hong Kong
+                { from: [51.5074, -0.1278], to: [40.4168, -3.7038], count: 25000 } // London to Madrid
+            ]
+        };
+
+        // Function to draw travel flows on the map
+        function drawTravelFlows() {
+            travelData.flows.forEach(flow => {
+                const latlngs = [flow.from, flow.to];
+                const polyline = L.polyline(latlngs, {color: 'red', weight: 2}).addTo(map);
+                
+                // Add markers for source and destination
+                L.circleMarker(flow.from, {color: 'blue', radius: 5}).addTo(map)
+                    .bindPopup(`Departures: ${flow.count}`);
+                L.circleMarker(flow.to, {color: 'green', radius: 5}).addTo(map)
+                    .bindPopup(`Arrivals: ${flow.count}`);
+            });
+        }
+
+        // Function to update analytics panel
+        function updateAnalytics() {
+            document.getElementById('total-travelers').textContent = travelData.totalTravelers.toLocaleString();
+            document.getElementById('popular-destination').textContent = travelData.popularDestination;
+            document.getElementById('busiest-period').textContent = travelData.busiestPeriod;
+        }
+
+        // Function to process natural language queries
+        async function processQuery() {
+            const query = document.getElementById('nlp-input').value;
+            
+            // In a real application, this is where you would send the query to Claude 3.5 Sonnet
+            // For demonstration, we'll use a simple keyword matching system
+            let response = "I'm sorry, I couldn't understand your query. Could you please rephrase it?";
+            
+            if (query.toLowerCase().includes("total travelers")) {
+                response = `The total number of travelers is ${travelData.totalTravelers.toLocaleString()}.`;
+            } else if (query.toLowerCase().includes("popular destination")) {
+                response = `The most popular destination is ${travelData.popularDestination}.`;
+            } else if (query.toLowerCase().includes("busiest period")) {
+                response = `The busiest travel period is ${travelData.busiestPeriod}.`;
+            }
+
+            alert(response); // In a real app, you'd display this in a more user-friendly way
+        }
+
+        // Initialize the application
+        drawTravelFlows();
+        updateAnalytics();
+    </script>
+</body>
+</html>
